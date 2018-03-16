@@ -4,6 +4,18 @@ void main() {
   runApp(new ChatApp());
 }
 
+final ThemeData kIOSTheme = new ThemeData(
+  primarySwatch: Colors.orange,
+  primaryColor: Colors.grey[100],
+  primaryColorBrightness: Brightness.light,
+);
+
+final ThemeData kDefaultTheme = new ThemeData(
+  primarySwatch: Colors.purple,
+  accentColor: Colors.orangeAccent[400],
+);
+
+
 class ChatApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -23,7 +35,7 @@ class ChatScreen extends StatefulWidget {
 class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   final List<ChatMessage> _message = <ChatMessage>[];
   final TextEditingController _textController = new TextEditingController();
-
+  bool _isComposing = false;
   @override
   void dispose() {
     for (ChatMessage message in _message)
@@ -68,6 +80,11 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           new Flexible(
                 child: new TextField(
                 controller:  _textController,
+                onChanged: (String text) {
+                  setState(() {
+                    _isComposing = text.length > 0;
+                  });
+                },
                 onSubmitted: _handleSubmitted,
                 decoration: new InputDecoration.collapsed(
                 hintText: "Send a message"
@@ -78,7 +95,10 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               margin : new EdgeInsets.symmetric(horizontal: 4.0),
               child : new IconButton(
                 icon : new Icon(Icons.send),
-                onPressed: () => _handleSubmitted(_textController.text)),
+                onPressed: _isComposing
+                            ? () => _handleSubmitted(_textController.text)
+                            : null,
+              ),
           ),
         ],
       ),
@@ -91,12 +111,13 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     ChatMessage message  = new ChatMessage(
       text: text,
       animationController: new AnimationController(
-        duration: new Duration(milliseconds: 700),
+        duration: new Duration(milliseconds: 400),
         vsync: this,
       )
     );
     setState(() {
       _message.insert(0, message);
+      _isComposing = false;
     });
     message.animationController.forward();
   }
@@ -122,7 +143,8 @@ class ChatMessage extends StatelessWidget {
             margin : const EdgeInsets.only(right : 16.0),
             child : new CircleAvatar(child: new Text(_name[0])),
           ),
-          new Column(
+          new Expanded(
+            child: new Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               new Text(_name, style: Theme.of(context).textTheme.subhead),
@@ -131,6 +153,7 @@ class ChatMessage extends StatelessWidget {
                 child: new Text(text),
               )
             ],
+          )
           )
         ],
       )
