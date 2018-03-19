@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/cupertino.dart';
 
 void main() {
   runApp(new ChatApp());
@@ -21,6 +23,9 @@ class ChatApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return new MaterialApp(
       title : "Chat App",
+      theme: defaultTargetPlatform == TargetPlatform.iOS
+            ? kIOSTheme
+            : kDefaultTheme,
       home : new ChatScreen(),
     );
   }
@@ -47,9 +52,11 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return new Scaffold(
       appBar: new AppBar(
-        title : new Text("Chat App")
+        title : new Text("Chat App"),
+        elevation: Theme.of(context).platform == TargetPlatform.iOS ? 0.0 : 4.0,
       ),
-      body : new Column(
+      body : new Container(
+      child : new Column(
         children: <Widget>[
           new Flexible(
             child: new ListView.builder(
@@ -68,6 +75,14 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           ),
         ],
       ),
+      decoration: Theme.of(context).platform == TargetPlatform.iOS
+      ? new BoxDecoration(
+        border: new Border(
+          top: new BorderSide(color: Colors.grey[200]),
+        ),
+      )
+      : null
+    ),
     );
   }
 
@@ -93,12 +108,18 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           ),
             new Container(
               margin : new EdgeInsets.symmetric(horizontal: 4.0),
-              child : new IconButton(
-                icon : new Icon(Icons.send),
+              child : Theme.of(context).platform == TargetPlatform.iOS ?
+              new CupertinoButton(
+                child: new Text('Send'),
                 onPressed: _isComposing
-                            ? () => _handleSubmitted(_textController.text)
-                            : null,
-              ),
+                  ? () => _handleSubmitted(_textController.text)
+                  : null,
+              ) :
+              new IconButton(
+                icon : new Icon(Icons.send),
+                onPressed: _isComposing ?
+                  () => _handleSubmitted(_textController.text) : null,
+              )
           ),
         ],
       ),
